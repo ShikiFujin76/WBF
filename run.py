@@ -158,23 +158,46 @@ def login():
 		banner()
 		text = Text('PASTIKAN JANGAN MENGGUNAKAN AKUN PRIBADI',justify='center')
 		cetak(nel(text,title="WARNING",border_style='b blue'))
-		cookie = console.input('  [[b blue]+[/]] MASUKAN COOKIE : ')
-		cookies = {"cookie":cookie}
-		data = 'https://www.facebook.com/adsmanager/manage/campaigns'
-		requ = ses.get(data,cookies=cookies)
-		cari = re.search('act=(.*?)&nav_source',str(requ.content)).group(1)
-		cara = '%s?act=%s&nav_source=no_referrer'%(data,cari)
-		cere = ses.get(cara,cookies=cookies)
-		toke = re.search('accessToken="(.*?)"',str(cere.content)).group(1)
-		tokenw = open("t.txt", "w").write(toke)
-		cokiew = open("c.txt", "w").write(cookie)
-		cetak(nel('[[b blue]+[/]] [b green]LOGIN BERHASIL[/]'));time.sleep(1)
+		cokis = console.input('  [[b blue]+[/]] MASUKAN COOKIE : ')
+		cokie = {'cookie': cokis}
+		data1 = {'access_token': '437340816620806|04a36c2558cde98e185d7f4f701e4d94', 'scope': ''}
+		post1 = ses.post('https://graph.facebook.com/v16.0/device/login/',data=data1).json()
+		code1 = post1['code']
+		code2 = post1['user_code']
+		urlg1 = 'https://graph.facebook.com/v16.0/device/login_status?method=post&code=%s&access_token=437340816620806|04a36c2558cde98e185d7f4f701e4d94'%(code1)
+		urlg2 = sop(ses.get('https://mbasic.facebook.com/device',cookies=cokie).content, "html.parser")
+		form1 = urlg2.find('form', {'method':'post'})
+		data2 = {
+			'jazoest': re.search('name="jazoest" type="hidden" value="(.*?)"',str(form1)).group(1),
+			'fb_dtsg': re.search('name="fb_dtsg" type="hidden" value="(.*?)"',str(form1)).group(1),
+			'qr': '0',
+			'user_code': code2
+		}
+		post2 = 'https://mbasic.facebook.com'+form1['action']
+		post3 = sop(ses.post(post2,data=data2,cookies=cokie).content, 'html.parser')
+		data2 = {}
+		form2 = post3.find('form', {'method':'post'})
+		for x in form2('input',{'value':True}):
+			try:
+				if x['name'] == '__CANCEL__':
+					pass
+				else:
+					data2.update({x['name']:x['value']})
+			except Exception as e:
+				pass
+		post4 = 'https://mbasic.facebook.com'+form2['action']
+		post5 = sop(ses.post(post4,data=data2,cookies=cokie).content,'html.parser')
+		urlg3 = ses.get(urlg1,cookies=cokie).json()
+		token = urlg3['access_token']
+		text = Text(f'{token}',justify='center')
+		cetak(nel(text))
+		kot = open('t.txt','w').write(token)
+		koc = open('c.txt','w').write(cokis)
+		masuk = input(f'\n[{H}!{P}] tekan enter')
 		os.system('clear')
-		MainMenu()
+		cek()
 	except Exception as e:
-		os.system('rm -rf c.txt && rm -rf t.txt')
-		cetak(nel('[[dark_orange]+[/]] login gagal cookie tidak bisa digunakan untuk login'))
-		exit()
+		print(e)
 
 def keluar():
 	os.system('rm -rf t.txt && rm -rf c.txt')
